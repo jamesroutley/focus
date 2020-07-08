@@ -47,8 +47,8 @@ forever.
 
 ## Usage
 
-```sh
-focus -h
+```
+$ focus -h
 Usage of focus:
   -profile string
         The profile to use (default "default")
