@@ -3,6 +3,9 @@
 Focus is a CLI app which edits your `/etc/hosts` file to temporarily stop your
 website from connecting to a list of websites which you define.
 
+⚠️ Focus requires `sudo` to work, and modifies and deletes system files - if 
+you want to use it please do so at your own risk.
+
 ## Example
 
 ```sh
