@@ -49,15 +49,6 @@ func run() error {
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 
-	// Set up the channel that we write to once the timer ends
-	timeout := make(chan time.Time, 1)
-	if duration > 0 {
-		go func() {
-			t := <-time.After(duration)
-			timeout <- t
-		}()
-	}
-
 	cfg, err := readConfig(configFile)
 	if err != nil {
 		return err
@@ -76,8 +67,29 @@ func run() error {
 	}
 
 	log.Println("Blocking websites. Press ctrl+c to stop")
+
+	// Set up the channel that we write to once the timer ends
+	timeout := make(chan time.Time, 1)
 	if duration > 0 {
-		log.Printf("%s remaining", duration)
+		end := time.Now().Add(duration)
+
+		go func() {
+			log.Printf("%s remaining", duration)
+			minsRemaining := int(duration.Minutes())
+			for {
+				select {
+				// Write to the timeout channel once we reach the endtime
+				case t := <-time.After(end.Sub(time.Now())):
+					timeout <- t
+					// Return, so we don't print any more Xm remaining messages
+					return
+				// Print the time remaining every minute
+				case <-time.Tick(time.Minute):
+					minsRemaining--
+					log.Printf("%dm remaining", minsRemaining)
+				}
+			}
+		}()
 	}
 
 	select {
